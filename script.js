@@ -27,27 +27,60 @@ if (settings.hero?.src) {
   }, { once: true });
   photo.src = settings.hero.src;
 }
-if (settings.teaser?.src) {
+const teaserPlayers = [];
+function addTeaser(config, title, buttonText, id) {
+  const card = document.createElement("div");
+  card.className = "teaser-card";
   const player = document.createElement("audio");
+  player.id = id;
   player.controls = true;
   player.preload = "none";
-  player.setAttribute("aria-label", "In Late July — audio teaser");
+  player.setAttribute("aria-label", `In Late July — ${title}`);
   const source = document.createElement("source");
-  source.src = settings.teaser.src;
-  source.type = settings.teaser.type || "audio/mpeg";
+  source.src = config.src;
+  source.type = config.type || "audio/mpeg";
   player.append(source);
   const label = document.createElement("p");
-  label.textContent = "In Late July — a first listen";
+  label.textContent = title;
   label.className = "small";
   const fallback = document.createElement("a");
-  fallback.href = settings.teaser.src;
+  fallback.href = config.src;
   fallback.textContent = "Open audio file ↗";
   fallback.className = "text-link";
   const status = document.createElement("p");
   status.className = "small muted";
   status.setAttribute("role", "status");
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "text-link teaser-button";
+  button.textContent = buttonText;
+  button.setAttribute("aria-controls", id);
+  function start() {
+    teaserPlayers.forEach(other => { if (other !== player) other.pause(); });
+    const attempt = player.play();
+    if (attempt) attempt.catch(() => { status.textContent = "Press play below to listen, or open the audio file."; });
+  }
+  button.addEventListener("click", start);
+  player.addEventListener("play", () => {
+    status.textContent = "";
+    teaserPlayers.forEach(other => { if (other !== player) other.pause(); });
+  });
   player.addEventListener("error", () => { status.textContent = "The teaser is unavailable. Please try again later."; }, true);
-  document.querySelector("#teaser").replaceChildren(label, player, fallback, status);
+  card.append(label, button, player, fallback, status);
+  document.querySelector("#teaser").append(card);
+  teaserPlayers.push(player);
+  return start;
+}
+if (settings.teaser?.src) {
+  document.querySelector("#teaser").replaceChildren();
+  const startIntro = addTeaser(settings.teaser, "Intro · 31 seconds", "Listen — intro", "intro-player");
+  document.querySelectorAll("[data-play-intro]").forEach(link => link.addEventListener("click", event => {
+    if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button > 0) return;
+    startIntro();
+  }));
+  if (settings.secondTeaser?.src) {
+    addTeaser(settings.secondTeaser, "Verse & chorus · 31 seconds", "Listen — verse & chorus", "verse-chorus-player");
+  }
 }
 (settings.gallery || []).forEach(item => {
   if (!item.src) return;

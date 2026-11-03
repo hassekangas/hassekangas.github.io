@@ -7,8 +7,12 @@ window.artistContent = {
     position: "center center"
   },
   teaser: {
-    src: "", // Example: "assets/audio/in-late-july-teaser.mp3"
-    type: "audio/mpeg"
+    src: "assets/audio/in-late-july-intro.wav",
+    type: "audio/wav"
+  },
+  secondTeaser: {
+    src: "assets/audio/in-late-july-verse-chorus.wav",
+    type: "audio/wav"
   },
   // Add entries to extend Gallery. The piano photograph is already included.
   gallery: [
